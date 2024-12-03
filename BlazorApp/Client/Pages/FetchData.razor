@@ -1,0 +1,51 @@
+﻿@page "/fetchdata"
+@using BlazorApp.Shared
+@inject HttpClient Http
+
+<h1>Weather forecast</h1>
+
+<p>This component demonstrates fetching data from the server.</p>
+
+@if (companies == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Company Name</th>
+                <th>Website</th>
+                <th>Rating</th>
+                <th>Phone No.</th>
+                <th>Address</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var company in companies)
+            {
+                <tr>
+                    <td>@company.Name</td>
+                    <td>@company.Website</td>
+                    <td>@company.Rating</td>
+                    <td>@company.PhoneNumber</td>
+                    <td>@company.Address</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+
+    private WeatherForecast[] forecasts;
+    private List<Object> CompanyPlaceIDs;
+    private Company[] companies;
+
+    protected override async Task OnInitializedAsync()
+    {
+        companies = await Http.GetFromJsonAsync<Company[]>("GoogleData");
+    }
+
+}
