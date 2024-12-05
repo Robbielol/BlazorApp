@@ -2,13 +2,17 @@
 @using BlazorApp.Shared
 @inject HttpClient Http
 
-<h1>Weather forecast</h1>
+<h1>@companies?.Length</h1>
 
-<p>This component demonstrates fetching data from the server.</p>
+
 
 @if (companies == null)
 {
     <p><em>Loading...</em></p>
+    <form>
+        <input type="text" @oninput="UpdateText" />
+        <button type="button" @onclick="SubmitForm">Enter</button>
+    </form>
 }
 else
 {
@@ -41,11 +45,26 @@ else
 
     private WeatherForecast[] forecasts;
     private List<Object> CompanyPlaceIDs;
+
+    private string queryInput;
+    private string rating;
     private Company[] companies;
 
-    protected override async Task OnInitializedAsync()
+    private void UpdateText(ChangeEventArgs e)
     {
-        companies = await Http.GetFromJsonAsync<Company[]>("GoogleData");
+        queryInput = e.Value.ToString();
+    }
+
+    private async void SubmitForm()
+    {
+        await GetTaskAsync();
+        StateHasChanged();
+
+    }
+
+    protected async Task GetTaskAsync()
+    {
+        companies = await Http.GetFromJsonAsync<Company[]>($"GoogleData/GetCompanies?query={queryInput}");
     }
 
 }

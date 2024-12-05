@@ -24,21 +24,19 @@ namespace BlazorApp.Server.Controllers
             _logger = logger;
         }
             
-        [HttpGet]
-        public ActionResult<List<Company>> GetBusinessesPlaceIDAsync()
+        [HttpGet("GetCompanies")]
+        public async Task<List<Company>> GetBusinessesPlaceIDAsync(string query)
         {
-            string query = "Hair Salons on Commercial Drive";
+            
             double radius = 10000;
             string apiKey = "AIzaSyBQcVCnvdo13C5OMRaonkLKpPw1sPuN9Ds";
             string location = "49.2827,-123.1207";
             string baseUrl = "https://maps.googleapis.com/maps/api/place/textsearch/json";
-            HttpClient client = new HttpClient();
+            HttpClient client = new();
             var allResults = new List<JObject>();
             string nextPageToken = null;
-
-            do
-            {
-                Dictionary<string, string> parameters = new Dictionary<string, string>
+            int count = 0;
+            Dictionary<string, string> parameters = new()
             {
                 { "key", apiKey },
                 { "location", location },
@@ -46,6 +44,10 @@ namespace BlazorApp.Server.Controllers
                 { "query", query }
             };
 
+            do
+            {
+                count++;
+                Console.WriteLine("Token " +count);
                 if (!string.IsNullOrEmpty(nextPageToken))
                 {
                     parameters.Add("pagetoken", nextPageToken);
@@ -69,14 +71,14 @@ namespace BlazorApp.Server.Controllers
 
                 if (!string.IsNullOrEmpty(nextPageToken))
                 {
-                    Task.Delay(2000); // Delay for the next page token to activate
+                    await Task.Delay(1000); // Delay for the next page token to activate
                 }
             } while (!string.IsNullOrEmpty(nextPageToken));
 
             return GetBusinessesWithoutWebsite(allResults, apiKey);
         }
 
-        public ActionResult<List<Company>> GetBusinessesWithoutWebsite(List<JObject> placeIdList, string apiKey)
+        public List<Company> GetBusinessesWithoutWebsite(List<JObject> placeIdList, string apiKey)
         {
             HttpClient client = new HttpClient();
             List<Company> businessNoWebsiteList = new List<Company>();
@@ -108,7 +110,7 @@ namespace BlazorApp.Server.Controllers
                 if (placeData["result"] != null)
                 {
                     var placeDetails = placeData["result"];
-                    string website = placeDetails["website"]?.ToString() ?? "No name available";
+                    string website = placeDetails["website"]?.ToString();
                     double rating = placeDetails["rating"]?.ToObject<double>() ?? 0;
 
                     if ((string.IsNullOrEmpty(website) || website.Contains("facebook") || website.Contains("instagram")) && rating >= 3.9)
