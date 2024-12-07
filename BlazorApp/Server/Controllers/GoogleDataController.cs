@@ -29,9 +29,9 @@ namespace BlazorApp.Server.Controllers
         {
             
             double radius = 10000;
-            string apiKey = "AIzaSyBQcVCnvdo13C5OMRaonkLKpPw1sPuN9Ds";
+            string apiKey = Environment.GetEnvironmentVariable("G_API_KEY");
             string location = "49.2827,-123.1207";
-            string baseUrl = "https://maps.googleapis.com/maps/api/place/textsearch/json";
+            string placeIDUrl = Environment.GetEnvironmentVariable("G_PLACEID_URL");
             HttpClient client = new();
             var allResults = new List<JObject>();
             string nextPageToken = null;
@@ -53,7 +53,7 @@ namespace BlazorApp.Server.Controllers
                     parameters.Add("pagetoken", nextPageToken);
                 }
 
-                string url = $"{baseUrl}?{string.Join("&", parameters.Select(x => $"{x.Key}={x.Value}"))}";
+                string url = $"{placeIDUrl}?{string.Join("&", parameters.Select(x => $"{x.Key}={x.Value}"))}";
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
                 request.Method = "GET";
                 
@@ -87,7 +87,7 @@ namespace BlazorApp.Server.Controllers
                 string placeId = place["place_id"]?.ToString();
                 if (string.IsNullOrEmpty(placeId)) continue;
 
-                string detailsUrl = "https://maps.googleapis.com/maps/api/place/details/json";
+                string detailsUrl = Environment.GetEnvironmentVariable("G_PLACE_DETAILS_URL");
                 var parameters = new Dictionary<string, string>
                 {
                     { "key", apiKey },
